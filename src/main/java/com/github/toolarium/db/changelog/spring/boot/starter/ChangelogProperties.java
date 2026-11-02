@@ -41,9 +41,6 @@ public class ChangelogProperties {
     /** Active labels for filtering changesets. */
     private List<String> labels;
 
-    /** Default author for changesets. */
-    private String defaultAuthor;
-
     /** Snapshot policy for rollback support. */
     private ChangelogSnapshotPolicy snapshotPolicy = ChangelogSnapshotPolicy.NONE;
 
@@ -52,6 +49,24 @@ public class ChangelogProperties {
 
     /** Object quoting strategy for SQL generation. */
     private ChangelogObjectQuotingStrategy objectQuotingStrategy = ChangelogObjectQuotingStrategy.NONE;
+
+    /** JDBC URL for a dedicated migration DataSource. If set, a separate connection is used for migrations. */
+    private String url;
+
+    /** Username for the dedicated migration DataSource. */
+    private String user;
+
+    /** Password for the dedicated migration DataSource. */
+    private String password;
+
+    /** JDBC driver class name for the dedicated migration DataSource. */
+    private String driverClassName;
+
+    /** Tag name to apply after running migrations. */
+    private String tag;
+
+    /** Whether to clear all stored checksums before running migrations. */
+    private boolean clearChecksums = false;
 
 
     /**
@@ -195,26 +210,6 @@ public class ChangelogProperties {
 
 
     /**
-     * Get the default author.
-     *
-     * @return the default author
-     */
-    public String getDefaultAuthor() {
-        return defaultAuthor;
-    }
-
-
-    /**
-     * Set the default author.
-     *
-     * @param defaultAuthor the default author
-     */
-    public void setDefaultAuthor(String defaultAuthor) {
-        this.defaultAuthor = defaultAuthor;
-    }
-
-
-    /**
      * Get the snapshot policy.
      *
      * @return the snapshot policy
@@ -271,5 +266,141 @@ public class ChangelogProperties {
      */
     public void setObjectQuotingStrategy(ChangelogObjectQuotingStrategy objectQuotingStrategy) {
         this.objectQuotingStrategy = objectQuotingStrategy;
+    }
+
+
+    /**
+     * Get the JDBC URL for the dedicated migration DataSource.
+     *
+     * @return the URL, or null if using the primary DataSource
+     */
+    public String getUrl() {
+        return url;
+    }
+
+
+    /**
+     * Set the JDBC URL for the dedicated migration DataSource.
+     *
+     * @param url the JDBC URL
+     */
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+
+    /**
+     * Get the username for the dedicated migration DataSource.
+     *
+     * @return the username
+     */
+    public String getUser() {
+        return user;
+    }
+
+
+    /**
+     * Set the username for the dedicated migration DataSource.
+     *
+     * @param user the username
+     */
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+
+    /**
+     * Get the password for the dedicated migration DataSource.
+     *
+     * @return the password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+
+    /**
+     * Set the password for the dedicated migration DataSource.
+     *
+     * @param password the password
+     */
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+
+    /**
+     * Get the JDBC driver class name for the dedicated migration DataSource.
+     *
+     * @return the driver class name
+     */
+    public String getDriverClassName() {
+        return driverClassName;
+    }
+
+
+    /**
+     * Set the JDBC driver class name for the dedicated migration DataSource.
+     *
+     * @param driverClassName the driver class name
+     */
+    public void setDriverClassName(String driverClassName) {
+        this.driverClassName = driverClassName;
+    }
+
+
+    /**
+     * Get the tag name to apply after running migrations.
+     *
+     * @return the tag name, or null if no tagging
+     */
+    public String getTag() {
+        return tag;
+    }
+
+
+    /**
+     * Set the tag name to apply after running migrations.
+     *
+     * @param tag the tag name
+     */
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+
+    /**
+     * Check whether stored checksums should be cleared before running migrations.
+     *
+     * @return true if checksums should be cleared
+     */
+    public boolean isClearChecksums() {
+        return clearChecksums;
+    }
+
+
+    /**
+     * Set whether stored checksums should be cleared before running migrations.
+     *
+     * @param clearChecksums true to clear checksums
+     */
+    public void setClearChecksums(boolean clearChecksums) {
+        this.clearChecksums = clearChecksums;
+    }
+
+
+    /**
+     * Check whether a dedicated migration DataSource is configured.
+     *
+     * @return true if url, user, or password is set
+     */
+    public boolean hasSeparateDataSource() {
+        if (url != null && !url.isEmpty()) {
+            return true;
+        }
+        if (user != null && !user.isEmpty()) {
+            return true;
+        }
+        return password != null && !password.isEmpty();
     }
 }

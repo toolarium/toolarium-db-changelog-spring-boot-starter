@@ -39,10 +39,16 @@ public class ChangelogPropertiesTest {
         assertFalse(props.isLeaderElection());
         assertNull(props.getContexts());
         assertNull(props.getLabels());
-        assertNull(props.getDefaultAuthor());
         assertEquals(ChangelogSnapshotPolicy.NONE, props.getSnapshotPolicy());
         assertEquals(ChangelogRollbackPolicy.WARN, props.getRollbackPolicy());
         assertEquals(ChangelogObjectQuotingStrategy.NONE, props.getObjectQuotingStrategy());
+        assertNull(props.getUrl());
+        assertNull(props.getUser());
+        assertNull(props.getPassword());
+        assertNull(props.getDriverClassName());
+        assertNull(props.getTag());
+        assertFalse(props.isClearChecksums());
+        assertFalse(props.hasSeparateDataSource());
     }
 
 
@@ -76,9 +82,6 @@ public class ChangelogPropertiesTest {
         props.setLabels(labels);
         assertEquals(labels, props.getLabels());
 
-        props.setDefaultAuthor("john");
-        assertEquals("john", props.getDefaultAuthor());
-
         props.setSnapshotPolicy(ChangelogSnapshotPolicy.ALL);
         assertEquals(ChangelogSnapshotPolicy.ALL, props.getSnapshotPolicy());
 
@@ -87,5 +90,57 @@ public class ChangelogPropertiesTest {
 
         props.setObjectQuotingStrategy(ChangelogObjectQuotingStrategy.QUOTE_ALL);
         assertEquals(ChangelogObjectQuotingStrategy.QUOTE_ALL, props.getObjectQuotingStrategy());
+
+        props.setTag("v1.0");
+        assertEquals("v1.0", props.getTag());
+
+        props.setClearChecksums(true);
+        assertTrue(props.isClearChecksums());
+
+        props.setUrl("jdbc:h2:mem:migration");
+        assertEquals("jdbc:h2:mem:migration", props.getUrl());
+
+        props.setUser("admin");
+        assertEquals("admin", props.getUser());
+
+        props.setPassword("secret");
+        assertEquals("secret", props.getPassword());
+
+        props.setDriverClassName("org.h2.Driver");
+        assertEquals("org.h2.Driver", props.getDriverClassName());
+    }
+
+
+    /**
+     * Test separate DataSource detection.
+     */
+    @Test
+    void testHasSeparateDataSource() {
+        ChangelogProperties props = new ChangelogProperties();
+        assertFalse(props.hasSeparateDataSource());
+
+        props.setUrl("jdbc:h2:mem:migration");
+        assertTrue(props.hasSeparateDataSource());
+
+        props = new ChangelogProperties();
+        props.setUser("admin");
+        assertTrue(props.hasSeparateDataSource());
+
+        props = new ChangelogProperties();
+        props.setPassword("secret");
+        assertTrue(props.hasSeparateDataSource());
+    }
+
+
+    /**
+     * Test that empty strings do not trigger separate DataSource.
+     */
+    @Test
+    void testHasSeparateDataSourceEmptyStrings() {
+        ChangelogProperties props = new ChangelogProperties();
+        props.setUrl("");
+        props.setUser("");
+        props.setPassword("");
+        assertFalse(props.hasSeparateDataSource());
     }
 }

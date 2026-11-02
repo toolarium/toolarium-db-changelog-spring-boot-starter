@@ -9,6 +9,9 @@ Spring Boot auto-configuration starter for [toolarium-db-changelog](https://gith
 - Auto-configures `IChangelogRunner` from the Spring `DataSource`
 - Runs migrations on application startup
 - Spring Boot properties for all configuration options (`toolarium.db.changelog.*`)
+- Dedicated migration DataSource with separate credentials for DDL-privileged users
+- Automatic DependsOn ordering for JPA EntityManagerFactory and JDBC beans
+- Tag database after migrations, clear checksums on startup
 - Actuator health indicator (reports pending changesets)
 - Actuator info contributor (exposes applied/pending changeset counts)
 - Supports Spring Boot 2.7+ and 3.x
@@ -19,7 +22,7 @@ Add the dependency to your `build.gradle`:
 
 ```groovy
 dependencies {
-    implementation 'com.github.toolarium:toolarium-db-changelog-spring-boot-starter:0.8.9'
+    implementation 'com.github.toolarium:toolarium-db-changelog-spring-boot-starter:0.8.0'
 }
 ```
 
@@ -70,9 +73,6 @@ toolarium.db.changelog.contexts=prod,shared
 # Active labels for filtering changesets
 toolarium.db.changelog.labels=1.0,core
 
-# Default author for changesets
-toolarium.db.changelog.default-author=deploy
-
 # Snapshot policy: NONE, AUTO, DDL, ALL (default: NONE)
 toolarium.db.changelog.snapshot-policy=NONE
 
@@ -81,7 +81,33 @@ toolarium.db.changelog.rollback-policy=WARN
 
 # Object quoting strategy: NONE, QUOTE_ALL (default: NONE)
 toolarium.db.changelog.object-quoting-strategy=NONE
+
+# Tag database after running migrations
+toolarium.db.changelog.tag=v1.0
+
+# Clear stored checksums before running migrations (default: false)
+toolarium.db.changelog.clear-checksums=false
 ```
+
+## Dedicated Migration DataSource
+
+To run migrations with a DDL-privileged user separate from the application user:
+
+```properties
+toolarium.db.changelog.url=jdbc:postgresql://db:5432/mydb
+toolarium.db.changelog.user=migration_user
+toolarium.db.changelog.password=secret
+toolarium.db.changelog.driver-class-name=org.postgresql.Driver
+```
+
+The `url` property is required when using a separate migration DataSource. `user` and `password` are optional.
+
+## JPA and JDBC Ordering
+
+The starter automatically registers `BeanFactoryPostProcessor` beans that ensure
+JPA `EntityManagerFactory` and Spring JDBC `JdbcTemplate` beans depend on the
+changelog initializer. This guarantees migrations complete before any bean accesses
+the database schema.
 
 ## Actuator Endpoints
 

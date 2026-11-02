@@ -26,7 +26,6 @@ dependencies {
     // Spring Boot actuator (optional)
     compileOnly "org.springframework.boot:spring-boot-actuator-autoconfigure:2.7.18"
 
-
     // Spring Boot annotation processor for configuration metadata
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:2.7.18"
 
