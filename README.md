@@ -19,7 +19,7 @@ Add the dependency to your `build.gradle`:
 
 ```groovy
 dependencies {
-    implementation 'com.github.toolarium:toolarium-db-changelog-spring-boot-starter:0.0.1'
+    implementation 'com.github.toolarium:toolarium-db-changelog-spring-boot-starter:0.8.9'
 }
 ```
 
