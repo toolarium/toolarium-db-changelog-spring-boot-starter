@@ -15,20 +15,16 @@ dependencies {
     testImplementation "ch.qos.logback:logback-classic:${commonGradleLogbackVersion}"
 
     // core changelog library
-    implementation files('../toolarium-db-changelog/build/libs/toolarium-db-changelog-0.8.0-SNAPSHOT.jar')
+    implementation "com.github.toolarium:toolarium-db-changelog:0.8.0"
 
-    // transitive dependencies of toolarium-db-changelog (needed because it is a file dependency)
-    implementation "com.github.toolarium:toolarium-leader-election:1.3.1"
-    implementation "com.github.toolarium:toolarium-common:1.2.1"
-    implementation "org.yaml:snakeyaml:2.2"
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.18.2"
+    // resolve javadoc warnings for transitive Jackson annotations
+    compileOnly "com.fasterxml.jackson.core:jackson-annotations:2.18.2"
 
     // Spring Boot auto-configuration
     implementation "org.springframework.boot:spring-boot-autoconfigure:2.7.18"
 
     // Spring Boot actuator (optional)
     compileOnly "org.springframework.boot:spring-boot-actuator-autoconfigure:2.7.18"
-
 
     // Spring Boot annotation processor for configuration metadata
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:2.7.18"

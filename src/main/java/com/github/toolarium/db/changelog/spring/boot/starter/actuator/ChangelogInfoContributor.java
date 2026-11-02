@@ -39,28 +39,37 @@ public class ChangelogInfoContributor implements InfoContributor {
 
 
     /**
-     * @see org.springframework.boot.actuate.info.InfoContributor#contribute(org.springframework.boot.actuate.info.Info.Builder)
+     * @see org.springframework.boot.actuate.info.InfoContributor#contribute(
+     *      org.springframework.boot.actuate.info.Info.Builder)
      */
     @Override
     public void contribute(Info.Builder builder) {
-        try {
-            Map<String, Object> details = new LinkedHashMap<>();
+        Map<String, Object> details = new LinkedHashMap<>();
 
+        try {
             List<IChangelogTrackingEntry> history = changelogRunner.history();
             if (history != null) {
                 details.put("appliedChangesets", history.size());
             }
+        } catch (Exception e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Failed to collect changelog history: " + e.getMessage(), e);
+            }
+        }
 
+        try {
             List<IChangelogChangeSetStatus> pending = changelogRunner.status();
             if (pending != null) {
                 details.put("pendingChangesets", pending.size());
             }
-
-            builder.withDetail("dbChangelog", details);
         } catch (Exception e) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Failed to collect changelog info: " + e.getMessage(), e);
+                LOG.debug("Failed to collect changelog status: " + e.getMessage(), e);
             }
+        }
+
+        if (!details.isEmpty()) {
+            builder.withDetail("dbChangelog", details);
         }
     }
 }
