@@ -7,12 +7,6 @@ apply from: "https://raw.githubusercontent.com/toolarium/common-gradle-build/mas
 
 
 /************************************************************************************************************************
- * Allow additional root-level files not in the common-gradle-build default whitelist
- ************************************************************************************************************************/
-addCommonGradlePropertyList("allowedMainFiles", "$rootDirectory/CLAUDE.md")
-
-
-/************************************************************************************************************************
  * Define project dependencies
  ************************************************************************************************************************/
 dependencies {
