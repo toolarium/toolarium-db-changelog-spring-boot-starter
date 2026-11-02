@@ -1,85 +1,107 @@
 # toolarium-db-changelog-spring-boot-starter
 
-Implements the spring-boot-starter integration of toolarium-db-changelog.
+[![License](https://img.shields.io/github/license/toolarium/toolarium-db-changelog-spring-boot-starter)](https://github.com/toolarium/toolarium-db-changelog-spring-boot-starter/blob/main/LICENSE)
 
-## Getting Started
+Spring Boot auto-configuration starter for [toolarium-db-changelog](https://github.com/toolarium/toolarium-db-changelog). Runs database migrations automatically on application startup with zero configuration required.
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+## Features
 
-### Prerequisites
+- Auto-configures `IChangelogRunner` from the Spring `DataSource`
+- Runs migrations on application startup
+- Spring Boot properties for all configuration options (`toolarium.db.changelog.*`)
+- Actuator health indicator (reports pending changesets)
+- Actuator info contributor (exposes applied/pending changeset counts)
+- Supports Spring Boot 2.7+ and 3.x
 
-What things you need to install the software and how to install them
+## Quick Start
 
-```
-Give examples
-```
+Add the dependency to your `build.gradle`:
 
-### Installing
-
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
+```groovy
+dependencies {
+    implementation 'com.github.toolarium:toolarium-db-changelog-spring-boot-starter:0.0.1'
+}
 ```
 
-End with an example of getting some data out of the system or using it for a little demo
+Place your changelog file at `src/main/resources/db/changelog/changelog-master.db.yaml`:
 
-## Running the tests
+```yaml
+format: toolarium-db-changelog/1.0
 
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
+changesets:
+  - id: create-users-table
+    changes:
+      - createTable:
+          tableName: users
+          columns:
+            - name: id
+              type: bigint
+              autoIncrement: true
+              constraints: { primaryKey: true, nullable: false }
+            - name: name
+              type: varchar(255)
 ```
 
-## Deployment
+Migrations run automatically on startup. No additional configuration needed.
 
-Add additional notes about how to deploy this on a live system
+## Configuration
+
+All properties are optional. Configure via `application.properties` or `application.yml`:
+
+```properties
+# Enable/disable migrations (default: true)
+toolarium.db.changelog.enabled=true
+
+# Path to the changelog file (default: classpath:db/changelog/changelog-master.db.yaml)
+toolarium.db.changelog.change-log=classpath:db/changelog/changelog-master.db.yaml
+
+# Tracking table name (default: DB_CHANGELOG)
+toolarium.db.changelog.tracking-table=DB_CHANGELOG
+
+# Lock table name (default: DB_CHANGELOG_LOCK)
+toolarium.db.changelog.lock-table=DB_CHANGELOG_LOCK
+
+# Enable leader election for distributed locking (default: false)
+toolarium.db.changelog.leader-election=false
+
+# Active contexts for filtering changesets
+toolarium.db.changelog.contexts=prod,shared
+
+# Active labels for filtering changesets
+toolarium.db.changelog.labels=1.0,core
+
+# Default author for changesets
+toolarium.db.changelog.default-author=deploy
+
+# Snapshot policy: NONE, AUTO, DDL, ALL (default: NONE)
+toolarium.db.changelog.snapshot-policy=NONE
+
+# Rollback policy: WARN, FAIL, IGNORE (default: WARN)
+toolarium.db.changelog.rollback-policy=WARN
+
+# Object quoting strategy: NONE, QUOTE_ALL (default: NONE)
+toolarium.db.changelog.object-quoting-strategy=NONE
+```
+
+## Actuator Endpoints
+
+When Spring Boot Actuator is on the classpath:
+
+- **Health** (`/actuator/health`): reports `UP` when all changesets are applied, `OUT_OF_SERVICE` when pending changesets exist
+- **Info** (`/actuator/info`): exposes `dbChangelog.appliedChangesets` and `dbChangelog.pendingChangesets` counts
+
+## Disabling Migrations
+
+To disable migrations (e.g. in tests):
+
+```properties
+toolarium.db.changelog.enabled=false
+```
 
 ## Built With
 
 * [cb](https://github.com/toolarium/common-build) - The toolarium common build
 
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
-## Authors
-
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
 ## License
 
-This project is licensed under the MIT License: https://mit-license.org - see the [LICENSE](LICENSE) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+This project is licensed under the Mozilla Public License Version 2.0. See the [LICENSE](LICENSE) file for details.

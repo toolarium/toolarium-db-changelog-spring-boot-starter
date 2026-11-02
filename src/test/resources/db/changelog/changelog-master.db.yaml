@@ -1,0 +1,15 @@
+format: toolarium-db-changelog/1.0
+
+changesets:
+  - id: create-test-table
+    author: test
+    changes:
+      - createTable:
+          tableName: test_table
+          columns:
+            - name: id
+              type: bigint
+              autoIncrement: true
+              constraints: { primaryKey: true, nullable: false }
+            - name: name
+              type: varchar(255)

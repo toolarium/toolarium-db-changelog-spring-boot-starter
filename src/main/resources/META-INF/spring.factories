@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.github.toolarium.db.changelog.spring.boot.starter.ChangelogAutoConfiguration,\
+  com.github.toolarium.db.changelog.spring.boot.starter.actuator.ChangelogActuatorAutoConfiguration
