@@ -124,6 +124,10 @@ To disable migrations (e.g. in tests):
 toolarium.db.changelog.enabled=false
 ```
 
+## Related Projects
+
+* [toolarium-db-changelog](https://github.com/toolarium/toolarium-db-changelog): the core database changelog and migration library
+
 ## Built With
 
 * [cb](https://github.com/toolarium/common-build) - The toolarium common build
