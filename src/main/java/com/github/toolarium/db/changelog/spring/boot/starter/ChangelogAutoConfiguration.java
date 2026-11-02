@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -27,7 +28,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @author patrick
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(IChangelogRunner.class)
 @ConditionalOnBean(DataSource.class)
 @ConditionalOnProperty(prefix = "toolarium.db.changelog", name = "enabled", havingValue = "true", matchIfMissing = true)
@@ -47,12 +48,17 @@ public class ChangelogAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public IChangelogRunner changelogRunner(DataSource dataSource, ChangelogProperties properties) {
+        DataSource migrationDataSource = dataSource;
+        if (properties.hasSeparateDataSource()) {
+            migrationDataSource = createMigrationDataSource(dataSource, properties);
+        }
+
         if (LOG.isDebugEnabled()) {
             LOG.debug("Creating changelog runner with changelog path: " + properties.getChangeLog());
         }
 
         ChangelogRunnerBuilder builder = ChangelogRunnerBuilder.builder()
-                .dataSource(dataSource)
+                .dataSource(migrationDataSource)
                 .changelog(properties.getChangeLog())
                 .trackingTable(properties.getTrackingTable())
                 .lockTable(properties.getLockTable())
@@ -76,11 +82,82 @@ public class ChangelogAutoConfiguration {
      * Create the {@link ChangelogInitializer} bean that runs migrations on startup.
      *
      * @param changelogRunner the changelog runner
+     * @param properties the changelog properties
      * @return the changelog initializer
      */
     @Bean
     @ConditionalOnMissingBean
-    public ChangelogInitializer changelogInitializer(IChangelogRunner changelogRunner) {
-        return new ChangelogInitializer(changelogRunner);
+    public ChangelogInitializer changelogInitializer(IChangelogRunner changelogRunner, ChangelogProperties properties) {
+        return new ChangelogInitializer(changelogRunner, properties.isClearChecksums(), properties.getTag());
+    }
+
+
+    /**
+     * Ensure JPA EntityManagerFactory beans depend on the changelog initializer.
+     *
+     * @return the post processor
+     */
+    @Bean
+    @ConditionalOnClass(name = "org.springframework.orm.jpa.AbstractEntityManagerFactoryBean")
+    public static ChangelogDependsOnPostProcessor changelogJpaDependsOnPostProcessor() {
+        return new ChangelogDependsOnPostProcessor("org.springframework.orm.jpa.AbstractEntityManagerFactoryBean");
+    }
+
+
+    /**
+     * Ensure JdbcOperations beans depend on the changelog initializer.
+     *
+     * @return the post processor
+     */
+    @Bean
+    @ConditionalOnClass(name = "org.springframework.jdbc.core.JdbcOperations")
+    public static ChangelogDependsOnPostProcessor changelogJdbcDependsOnPostProcessor() {
+        return new ChangelogDependsOnPostProcessor("org.springframework.jdbc.core.JdbcOperations");
+    }
+
+
+    /**
+     * Ensure NamedParameterJdbcOperations beans depend on the changelog initializer.
+     *
+     * @return the post processor
+     */
+    @Bean
+    @ConditionalOnClass(name = "org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations")
+    public static ChangelogDependsOnPostProcessor changelogNamedJdbcDependsOnPostProcessor() {
+        return new ChangelogDependsOnPostProcessor(
+                "org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations");
+    }
+
+
+    /**
+     * Create a dedicated DataSource for migrations using the configured credentials.
+     * Falls back to the primary DataSource properties for any value not explicitly set.
+     *
+     * @param primaryDataSource the primary application DataSource
+     * @param properties the changelog properties
+     * @return the migration DataSource
+     * @throws IllegalArgumentException if url is not configured
+     */
+    private DataSource createMigrationDataSource(DataSource primaryDataSource, ChangelogProperties properties) {
+        if (properties.getUrl() == null || properties.getUrl().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "toolarium.db.changelog.url is required when user or password is configured for a separate migration DataSource.");
+        }
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Creating dedicated migration DataSource.");
+        }
+
+        DataSourceBuilder<?> builder = DataSourceBuilder.create().url(properties.getUrl());
+        if (properties.getUser() != null && !properties.getUser().isEmpty()) {
+            builder.username(properties.getUser());
+        }
+        if (properties.getPassword() != null && !properties.getPassword().isEmpty()) {
+            builder.password(properties.getPassword());
+        }
+        if (properties.getDriverClassName() != null && !properties.getDriverClassName().isEmpty()) {
+            builder.driverClassName(properties.getDriverClassName());
+        }
+        return builder.build();
     }
 }

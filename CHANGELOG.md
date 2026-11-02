@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Auto-configuration for `IChangelogRunner` with Spring Boot `DataSource` auto-detection.
 - Spring Boot properties support (`toolarium.db.changelog.*`) for all configuration options.
 - Automatic migration execution on application startup.
+- Dedicated migration DataSource support (`url`, `user`, `password`, `driver-class-name`) for DDL-privileged users.
+- DependsOn ordering for JPA EntityManagerFactory, JdbcOperations, and NamedParameterJdbcOperations.
+- Tag database after migrations (`tag` property).
+- Clear stored checksums on startup (`clear-checksums` property).
 - Actuator health indicator reporting pending changeset status.
 - Actuator info contributor exposing applied and pending changeset counts.
 - Support for Spring Boot 2.7+ and 3.x auto-configuration registration.

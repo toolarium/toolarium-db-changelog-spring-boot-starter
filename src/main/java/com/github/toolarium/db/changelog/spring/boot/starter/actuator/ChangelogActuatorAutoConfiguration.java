@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @author patrick
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(HealthIndicator.class)
 @ConditionalOnBean(IChangelogRunner.class)
 @AutoConfigureAfter(name = "com.github.toolarium.db.changelog.spring.boot.starter.ChangelogAutoConfiguration")
